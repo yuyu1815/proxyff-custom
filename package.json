@@ -1,0 +1,26 @@
+{
+  "name": "proxyff",
+  "version": "1.0.0",
+  "description": "MITM Proxy Experimentation for the game universe.flyff.com",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deadphoenix8091/proxyff.git"
+  },
+  "author": "deadphoenix8091",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/deadphoenix8091/proxyff/issues"
+  },
+  "homepage": "https://github.com/deadphoenix8091/proxyff#readme",
+  "devDependencies": {
+    "electron": "^20.0.1"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}
