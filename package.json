@@ -21,6 +21,8 @@
     "electron": "^20.0.1"
   },
   "dependencies": {
+    "bitwise-buffer": "^1.0.2",
+    "buffer-xor": "^2.0.2",
     "node-fetch": "^2.6.7"
   }
 }
