@@ -23,6 +23,7 @@
   "dependencies": {
     "bitwise-buffer": "^1.0.2",
     "buffer-xor": "^2.0.2",
+    "hexdump-nodejs": "^0.1.0",
     "node-fetch": "^2.6.7"
   }
 }

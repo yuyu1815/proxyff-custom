@@ -3,7 +3,8 @@ const PacketTypes = {
 };
 
 const bitwiseBuffer = require('bitwise-buffer')
-const { xor, and, or, nor, not, leftShift, rightShift, lshift, rshift } = bitwiseBuffer
+const { xor, and, or, nor, not, leftShift, rightShift, lshift, rshift } = bitwiseBuffer;
+const hexdump = require("hexdump-nodejs");
 
 
 module.exports = class WebSocketProxy {
@@ -70,7 +71,7 @@ module.exports = class WebSocketProxy {
                 break;
             default:
                 console.log("\x1b[32mSend: " + " Header: " + packetHeader + " DataLength: " + currentDataHexString.substring(18).length / 2 + "\x1b[0m");
-                console.log(packetData);
+                console.log(hexdump(packetData));
         }
     }
 
@@ -90,7 +91,7 @@ module.exports = class WebSocketProxy {
                 break;
             default:
                 console.log("\x1b[31mRecv: " + " Header: " + packetHeader + " DataLength: " + currentDataHexString.substring(18).length / 2 + "\x1b[0m");
-                console.log(packetData);
+                console.log(hexdump(packetData));
         }
     }
 }
