@@ -53,9 +53,9 @@ module.exports = class WebSocketProxy {
         packetData = this.DecryptPacket(packetData, this.clientKey);
 
         let packetType = packetData.slice(0, 4).toString("hex");
-
+console.log(packetType);
         switch (packetType) {
-            case PacketTypes.CHARACTER_MOVE: //Character move packet
+            case "04945a64": //Character move packet
                 console.log("Character Move Packet:");
                 
                 let posX = packetData.readFloatLE(4);
@@ -64,14 +64,14 @@ module.exports = class WebSocketProxy {
                 console.log({ unknown1: packetData.slice(0, 4), posX, posY, posZ, unknown2: packetData.slice(16) })
                 //console.log(hexdump(packetData));
                 break;
-            case PacketTypes.CHAT_MESSAGE:
+            case "00b45a64":
                 let messageLength = parseInt(packetData.slice(4, 8).reverse().toString("hex"), 16);
                 let message = packetData.slice(8, messageLength + 8).toString("utf-8");
                 console.log("OnSendChatMessage: " + message);
                 break;
             default:
-                //console.log("\x1b[32mSend: " + " Header: " + packetHeader + " DataLength: " + currentDataHexString.substring(18).length / 2 + "\x1b[0m");
-                //console.log(hexdump(packetData));
+                console.log("\x1b[32mSend: " + " Header: " + packetHeader + " DataLength: " + currentDataHexString.substring(18).length / 2 + "\x1b[0m");
+                console.log(hexdump(packetData));
         }
     }
 
@@ -84,7 +84,7 @@ module.exports = class WebSocketProxy {
         let packetType = packetData.slice(0, 4).toString("hex");
 
         switch (packetType) {
-            case PacketTypes.CHAT_MESSAGE:
+            case "00b45a64":
                 let messageLength = parseInt(packetData.slice(4, 8).reverse().toString("hex"), 16);
                 let message = packetData.slice(8, messageLength + 8).toString("utf-8");
                 console.log("OnRecvChatMessage: " + message);
