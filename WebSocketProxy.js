@@ -1,12 +1,7 @@
-const PacketTypes = {
-    SendChatMessage: "1F 14 00 00",
-};
-
 const bitwiseBuffer = require('bitwise-buffer')
 const { xor, and, or, nor, not, leftShift, rightShift, lshift, rshift } = bitwiseBuffer;
 const hexdump = require("hexdump-nodejs");
-
-
+const PacketTypes = require('./PacketTypes');
 module.exports = class WebSocketProxy {
     constructor() {
         this.SetupClientXorKey();
@@ -60,18 +55,23 @@ module.exports = class WebSocketProxy {
         let packetType = packetData.slice(0, 4).toString("hex");
 
         switch (packetType) {
-            case "04905a64": //Character move packet
+            case PacketTypes.CHARACTER_MOVE: //Character move packet
                 console.log("Character Move Packet:");
-                console.log(packetData);
+                
+                let posX = packetData.readFloatLE(4);
+                let posY = packetData.readFloatLE(8);
+                let posZ = packetData.readFloatLE(12);
+                console.log({ unknown1: packetData.slice(0, 4), posX, posY, posZ, unknown2: packetData.slice(16) })
+                //console.log(hexdump(packetData));
                 break;
-            case "00b45a64":
+            case PacketTypes.CHAT_MESSAGE:
                 let messageLength = parseInt(packetData.slice(4, 8).reverse().toString("hex"), 16);
                 let message = packetData.slice(8, messageLength + 8).toString("utf-8");
                 console.log("OnSendChatMessage: " + message);
                 break;
             default:
-                console.log("\x1b[32mSend: " + " Header: " + packetHeader + " DataLength: " + currentDataHexString.substring(18).length / 2 + "\x1b[0m");
-                console.log(hexdump(packetData));
+                //console.log("\x1b[32mSend: " + " Header: " + packetHeader + " DataLength: " + currentDataHexString.substring(18).length / 2 + "\x1b[0m");
+                //console.log(hexdump(packetData));
         }
     }
 
@@ -84,7 +84,7 @@ module.exports = class WebSocketProxy {
         let packetType = packetData.slice(0, 4).toString("hex");
 
         switch (packetType) {
-            case "00b45a64":
+            case PacketTypes.CHAT_MESSAGE:
                 let messageLength = parseInt(packetData.slice(4, 8).reverse().toString("hex"), 16);
                 let message = packetData.slice(8, messageLength + 8).toString("utf-8");
                 console.log("OnRecvChatMessage: " + message);
