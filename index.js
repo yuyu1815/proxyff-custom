@@ -8,6 +8,7 @@ const https = require("https");
 const path = require("path");
 const WebSocketProxy = require('./WebSocketProxy');
 
+
 const INTERCEPT_HTTPS_PROTOCOL = true;
 
 let wsProxy = new WebSocketProxy();
@@ -19,14 +20,6 @@ ipcMain.on('websocket-packet', (event, dataBuffer) => {
         } else {
             wsProxy.OnIncommingMessage(url, Buffer.from(data));
         }
-        /*let currentDataBuffer = Buffer.from(data);
-        let currentDataHexString = currentDataBuffer.toString("hex").toUpperCase();
-
-        let packetType = currentDataHexString.substring(0, 8).match(/.{1,2}/g);
-        packetType = packetType.join(' ');
-
-        console.log(direction + ": " + url);
-        console.log(packetType + " DataLength: " + currentDataHexString.substring(8).length);*/
     }
 });
 
@@ -35,42 +28,16 @@ ipcMain.on('websocket-packet', (event, dataBuffer) => {
 let mainWindow
 
 async function createWindow() {
+    
     // Create the browser window.
     mainWindow = new BrowserWindow({
         width: 800,
         height: 600,
         webPreferences: {
             nodeIntegration: true,
-            preload: path.join(__dirname, 'preload.js'),
+            preload: path.join(__dirname, '/preload/HookWebsocket.js'),
             contextIsolation: false
         }
-    });
-
-    if (INTERCEPT_HTTPS_PROTOCOL) {
-        mainWindow.webContents.session.protocol.interceptBufferProtocol('https', async (request, callback) => {
-            //console.log(request.url);
-
-            https.get(request.url, function (res) {
-                let buffers = [];
-                res.on('data', d => {
-                    buffers.push(d);
-                });
-                res.on('end', () => {
-                    let totalBuffer = Buffer.concat(buffers);
-                    return callback({
-                        data: totalBuffer
-                    });
-                });
-            });
-        });
-
-    }
-
-    mainWindow.webContents.session.allowNTLMCredentialsForDomains('*.flyff.com');
-    await mainWindow.webContents.session.setProxy({
-        pacScript: '',
-        proxyBypassRules: '*-universe.flyff.com',
-        proxyRules: "https://*",
     });
 
     // and load the index.html of the app.
@@ -88,13 +55,6 @@ async function createWindow() {
     });
 }
 
-app.on('login', (event, _webContents, _request, authInfo, callback) => {
-    if (authInfo.isProxy) {
-        event.preventDefault();
-        return callback('foo', 'bar');
-    }
-});
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -109,9 +69,10 @@ app.on('window-all-closed', function () {
     }
 });
 
-app.on('activate', function () {
+app.on('activate', async function () {
     // On OS X it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
+
     if (mainWindow === null) {
         createWindow()
     }

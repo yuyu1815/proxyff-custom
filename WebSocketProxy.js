@@ -1,7 +1,6 @@
 const bitwiseBuffer = require('bitwise-buffer')
 const { xor, and, or, nor, not, leftShift, rightShift, lshift, rshift } = bitwiseBuffer;
-const hexdump = require("hexdump-nodejs");
-const PacketTypes = require('./PacketTypes');
+const PacketParser = require('./PacketParser');
 module.exports = class WebSocketProxy {
     constructor() {
         this.SetupClientXorKey();
@@ -45,53 +44,19 @@ module.exports = class WebSocketProxy {
     }
 
     async OnOutgoingMessage(url, data) {
-        let currentDataHexString = data.toString("hex").toUpperCase();
-
-        let packetHeader = currentDataHexString.substring(0, 18).match(/.{1,2}/g).join(' ');
-
-        let packetData = Buffer.from(currentDataHexString.substring(18), "hex");
-        packetData = this.DecryptPacket(packetData, this.clientKey);
-
-        let packetType = packetData.slice(0, 4).toString("hex");
-console.log(packetType);
-        switch (packetType) {
-            case "04945a64": //Character move packet
-                console.log("Character Move Packet:");
-                
-                let posX = packetData.readFloatLE(4);
-                let posY = packetData.readFloatLE(8);
-                let posZ = packetData.readFloatLE(12);
-                console.log({ unknown1: packetData.slice(0, 4), posX, posY, posZ, unknown2: packetData.slice(16) })
-                //console.log(hexdump(packetData));
-                break;
-            case "00b45a64":
-                let messageLength = parseInt(packetData.slice(4, 8).reverse().toString("hex"), 16);
-                let message = packetData.slice(8, messageLength + 8).toString("utf-8");
-                console.log("OnSendChatMessage: " + message);
-                break;
-            default:
-                console.log("\x1b[32mSend: " + " Header: " + packetHeader + " DataLength: " + currentDataHexString.substring(18).length / 2 + "\x1b[0m");
-                console.log(hexdump(packetData));
-        }
+        this.HandleMessage(data, "client")
     }
 
     async OnIncommingMessage(url, data) {
+        this.HandleMessage(data, "server");
+    }
+
+    async HandleMessage(data, origin) {
         let currentDataHexString = data.toString("hex").toUpperCase();
 
-        let packetHeader = currentDataHexString.substring(0, 18).match(/.{1,2}/g).join(' ');
         let packetData = Buffer.from(currentDataHexString.substring(18), "hex");
-        packetData = this.DecryptPacket(packetData, this.serverKey);
-        let packetType = packetData.slice(0, 4).toString("hex");
+        packetData = this.DecryptPacket(packetData, origin == "server" ? this.serverKey : this.clientKey);
 
-        switch (packetType) {
-            case "00b45a64":
-                let messageLength = parseInt(packetData.slice(4, 8).reverse().toString("hex"), 16);
-                let message = packetData.slice(8, messageLength + 8).toString("utf-8");
-                console.log("OnRecvChatMessage: " + message);
-                break;
-            default:
-                console.log("\x1b[31mRecv: " + " Header: " + packetHeader + " DataLength: " + currentDataHexString.substring(18).length / 2 + "\x1b[0m");
-                console.log(hexdump(packetData));
-        }
+        PacketParser.ParsePacket(packetData);
     }
 }
