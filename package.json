@@ -19,14 +19,19 @@
   },
   "homepage": "https://github.com/deadphoenix8091/proxyff#readme",
   "devDependencies": {
-    "electron": "^20.0.1",
+    "electron": "^33.2.1",
     "webpack-cli": "^4.10.0"
   },
   "dependencies": {
     "bitwise-buffer": "^1.0.2",
     "buffer-xor": "^2.0.2",
     "hexdump-nodejs": "^0.1.0",
+    "loader-utils": "^3.3.1",
     "node-fetch": "^2.6.7",
-    "webpack": "^4.46.0"
+    "npm": "^10.9.1",
+    "run": "^1.5.0",
+    "semver": "^7.6.3",
+    "start": "^5.1.0",
+    "webpack": "^5.97.0"
   }
 }
