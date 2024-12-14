@@ -145,38 +145,6 @@ module.exports = class PacketParser {
                 packet.Set("movementType", readBytes(2).toString("hex")); // 移動タイプ
                 packet.Set("sessionTime", readBytes(4)); // セッション時間
                 //データが変わってます
-
-               /* switch (packet.data.movementType) {
-                    case "0101":
-                    case "0201": //jump
-                    case "0601": //forward
-                    case "0701": //backward
-                    case "0801": //left rotate
-                    case "0901": //right rotate
-                    case "0a01":
-                        packet.Set("rotation", readFloat());
-                        readBytes(4);
-                        break;
-                    case "0400":
-                        //deselect target
-                        break;
-                    case "0401":
-                        //select target
-                        break;
-                    case "1101":
-                        //attack target
-                        break;
-                    case "0007":
-                        //click to move
-                        packet.Set("targetX", readFloat());
-                        readBytes(4);
-                        packet.Set("targetY", readFloat());
-                        readBytes(4);
-                        packet.Set("targetZ", readFloat());
-                        readBytes(4);
-                        packet.Set("rotation", PacketParser.CalculateRotation([packet.data.posX, packet.data.posY, packet.data.posZ], [packet.data.targetX, packet.data.targetY, packet.data.targetZ]));
-                        break;
-                }*/
                 // 移動タイプに応じた追加データの処理
                 switch(packet.data.movementType){
                     case "5a01": // キーボード入力による移動
@@ -198,15 +166,23 @@ module.exports = class PacketParser {
                             [packet.data.targetX, packet.data.targetY, packet.data.targetZ]
                         ));
                         console.log("movementType " + packet.data.movementType +" X "+ packet.data.posX +" Y "+ packet.data.posY +" Z "+ packet.data.posZ + 
-                                                                     " goto: " +" X "+ packet.data.targetX +" Y "+ packet.data.targetY +" Z "+  packet.data.targetZ)
+                                                                     " goto: " +" X "+ packet.data.targetX +" Y "+ packet.data.targetY +" Z "+  packet.data.targetZ);
                         break;
                     default:
-                        console.log("movementType " + packet.data.movementType)
+                        console.log("movementType " + packet.data.movementType);
                         break
                 }
                 break;
             default:
-                console.log("packetType: " + packetType)
+                let flag = true;
+                for(const i of PacketTypes.IKNOW){
+                    if(i == packetType){
+                        flag = false;
+                    }
+                }
+                if(flag){
+                    console.log("packetType: " + packetType);
+                }
         }
         return packet;
     }
