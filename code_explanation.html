@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>コード解説図</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .diagram {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .diagram img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        .code-explanation {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f0f7ff;
+            border-left: 4px solid #3498db;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        .flowchart {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .mermaid {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.1/dist/mermaid.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>プロキシFFカスタムコードの解説</h1>
+
+        <div class="diagram">
+            <h2>1. アプリケーション全体の構造</h2>
+            <div class="flowchart">
+                <pre class="mermaid">
+                    graph TD
+                    A[index.js - メインプロセス] --> B[WebSocketProxy.js]
+                    A --> C[overlay.html - レンダラープロセス]
+                    B --> D[PacketParser.js]
+                    D --> E[PacketTypes.js]
+                    D -- パケット解析結果 --> A
+                    A -- 位置データ --> C
+
+                    style A fill:#f9d5e5,stroke:#333,stroke-width:2px
+                    style B fill:#eeeeee,stroke:#333,stroke-width:1px
+                    style C fill:#d3f0ee,stroke:#333,stroke-width:2px
+                    style D fill:#eeeeee,stroke:#333,stroke-width:1px
+                    style E fill:#eeeeee,stroke:#333,stroke-width:1px
+                </pre>
+            </div>
+            <div class="code-explanation">
+                <p>アプリケーションは主に以下のコンポーネントで構成されています：</p>
+                <ul>
+                    <li><strong>index.js</strong>: Electronのメインプロセス。アプリケーションのエントリーポイントであり、ウィンドウ管理とIPCを担当します。</li>
+                    <li><strong>WebSocketProxy.js</strong>: ゲームのWebSocket通信を傍受するプロキシ。</li>
+                    <li><strong>PacketParser.js</strong>: 傍受したバイナリパケットを解析するパーサー。</li>
+                    <li><strong>PacketTypes.js</strong>: パケットタイプの定義を含むモジュール。</li>
+                    <li><strong>overlay.html</strong>: 解析したデータを視覚化するオーバーレイウィンドウ。</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="diagram">
+            <h2>2. データフロー</h2>
+            <div class="flowchart">
+                <pre class="mermaid">
+                    sequenceDiagram
+                    participant Game as ゲーム (Flyff Universe)
+                    participant Proxy as WebSocketProxy
+                    participant Parser as PacketParser
+                    participant Main as メインプロセス (index.js)
+                    participant Overlay as オーバーレイ (overlay.html)
+
+                    Game ->> Proxy: WebSocketメッセージ
+                    Proxy ->> Parser: バイナリパケット
+                    Parser ->> Parser: パケット解析
+                    Parser ->> Main: 解析結果 (位置データなど)
+                    Main ->> Overlay: IPC経由で位置データ送信
+                    Overlay ->> Overlay: マップ上に位置を表示
+                </pre>
+            </div>
+            <div class="code-explanation">
+                <p>データの流れは以下の通りです：</p>
+                <ol>
+                    <li>ゲーム（Flyff Universe）がWebSocketを通じてサーバーと通信します。</li>
+                    <li>WebSocketProxyがこの通信を傍受します。</li>
+                    <li>PacketParserがバイナリパケットを解析し、モンスター、プレイヤー、ユーザーの位置データを抽出します。</li>
+                    <li>解析結果がメインプロセス（index.js）に送られます。</li>
+                    <li>メインプロセスがIPC通信を使ってオーバーレイウィンドウにデータを送信します。</li>
+                    <li>オーバーレイウィンドウがマップ上に位置データを視覚化します。</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="diagram">
+            <h2>3. index.js の詳細</h2>
+            <div class="flowchart">
+                <pre class="mermaid">
+                    flowchart TD
+                    A[アプリケーション起動] --> B[Electronアプリ初期化]
+                    B --> C[メインウィンドウ作成]
+                    B --> D[オーバーレイウィンドウ作成]
+                    C --> E[ゲームページ読み込み]
+                    D --> F[overlay.html読み込み]
+
+                    G[IPC通信設定] --> H[websocket-packet]
+                    G --> I[monster-position]
+                    G --> J[player-position]
+                    G --> K[user-position]
+
+                    H --> L[WebSocketProxyにパケット転送]
+                    I --> M[モンスター位置をオーバーレイに転送]
+                    J --> N[プレイヤー位置をオーバーレイに転送]
+                    K --> O[ユーザー位置をオーバーレイに転送]
+
+                    style A fill:#f9d5e5,stroke:#333,stroke-width:1px
+                    style G fill:#d3f0ee,stroke:#333,stroke-width:1px
+                </pre>
+            </div>
+            <div class="code-explanation">
+                <p><strong>index.js</strong>の主な機能：</p>
+                <ul>
+                    <li>Electronアプリケーションの初期化と設定</li>
+                    <li>メインウィンドウとオーバーレイウィンドウの作成</li>
+                    <li>WebSocketProxyのインスタンス化</li>
+                    <li>IPC通信の設定：
+                        <ul>
+                            <li>websocket-packet: WebSocketメッセージの処理</li>
+                            <li>monster-position: モンスターの位置データの処理と転送</li>
+                            <li>player-position: プレイヤーの位置データの処理と転送</li>
+                            <li>user-position: ユーザーの位置データの処理と転送</li>
+                        </ul>
+                    </li>
+                    <li>位置データの保存と管理</li>
+                </ul>
+                <p>コードの重要な部分：</p>
+                <pre>
+// モンスターの位置情報を保存
+const monsterPositions = new Map();
+
+// プレイヤーの位置情報を保存
+let playerPosition = {
+  x: 0, y: 0, z: 0, rotation: 0, lastUpdate: Date.now()
+};
+
+// ユーザーの位置情報を保存
+let userPosition = {
+  x: 0, y: 0, z: 0, lastUpdate: Date.now()
+};
+
+// IPC通信の設定
+ipcMain.on('monster-position', (event, data) => {
+  // モンスターの位置データをオーバーレイウィンドウに転送
+  if (global.overlayWindow && !global.overlayWindow.isDestroyed()) {
+    global.overlayWindow.webContents.send('monster-position', data);
+  }
+});
+                </pre>
+            </div>
+        </div>
+
+        <div class="diagram">
+            <h2>4. PacketParser.js の詳細</h2>
+            <div class="flowchart">
+                <pre class="mermaid">
+                    classDiagram
+                    class Packet {
+                        +origin
+                        +packetType
+                        +data
+                        +SetOrigin(origin)
+                        +Set(key, value)
+                    }
+
+                    class PacketParser {
+                        +static customHexdump(buffer)
+                        +static CalculateRotation(posA, posB)
+                        +static ParsePacket(rawPacket)
+                    }
+
+                    PacketParser -- Packet : creates
+                </pre>
+            </div>
+            <div class="flowchart">
+                <pre class="mermaid">
+                    flowchart TD
+                    A[ParsePacket開始] --> B[パケットタイプ読み取り]
+                    B --> C{パケットタイプ判定}
+                    C -->|MONSTER_MOVE| D[モンスター移動パケット処理]
+                    C -->|USER_PACKET| E[ユーザーパケット処理]
+                    C -->|MONSTER_SPAWN| F[モンスター出現パケット処理]
+                    C -->|その他| G[その他のパケット処理]
+
+                    D --> H[モンスター位置データ抽出]
+                    E --> I[ユーザー位置データ抽出]
+                    F --> J[モンスター出現位置データ抽出]
+
+                    H --> K[IPCでデータ送信]
+                    I --> K
+                    J --> K
+
+                    style A fill:#f9d5e5,stroke:#333,stroke-width:1px
+                    style C fill:#d3f0ee,stroke:#333,stroke-width:1px
+                    style K fill:#f9d5e5,stroke:#333,stroke-width:1px
+                </pre>
+            </div>
+            <div class="code-explanation">
+                <p><strong>PacketParser.js</strong>の主な機能：</p>
+                <ul>
+                    <li>バイナリパケットの解析</li>
+                    <li>パケットタイプに基づいた処理の振り分け</li>
+                    <li>位置データの抽出</li>
+                    <li>回転角度の計算</li>
+                    <li>IPCを通じたデータの送信</li>
+                </ul>
+                <p>コードの重要な部分：</p>
+                <pre>
+static ParsePacket(rawPacket) {
+    // パケットタイプの読み取り
+    let packetType = readBytes(4).toString("hex");
+    let packet = new Packet();
+    packet.packetType = packetType;
+
+    // パケットタイプに応じた処理
+    switch (packetType) {
+        case PacketTypes.MONSTER_MOVE:
+            // モンスター位置データの抽出
+            packet.Set("posX", readFloat());
+            packet.Set("posY", readFloat());
+            packet.Set("posZ", readFloat());
+
+            // IPCでデータ送信
+            ipcMain.emit('monster-position', null, {
+                id: uniqueId,
+                x: packet.data.posX,
+                y: packet.data.posY,
+                z: packet.data.posZ,
+                lastUpdate: Date.now()
+            });
+            break;
+
+        case PacketTypes.USER_PACKET:
+            // ユーザー位置データの抽出と送信
+            // ...
+            break;
+    }
+    return packet;
+}
+                </pre>
+            </div>
+        </div>
+
+        <div class="diagram">
+            <h2>5. PacketTypes.js の詳細</h2>
+            <div class="flowchart">
+                <pre class="mermaid">
+                    graph TD
+                    A[PacketTypes.js] --> B[CHARACTER_MOVE: "04b01a64"]
+                    A --> C[CHAT_MESSAGE: "00b45a64"]
+                    A --> D[MONSTER_MOVE: "17b81a64"]
+                    A --> E[MONSTER_SPAWN: "02b81a64"]
+                    A --> F[USER_PACKET: "04ac1a64"]
+                    A --> G[IKNOW: 配列]
+
+                    style A fill:#f9d5e5,stroke:#333,stroke-width:1px
+                </pre>
+            </div>
+            <div class="code-explanation">
+                <p><strong>PacketTypes.js</strong>の主な機能：</p>
+                <ul>
+                    <li>パケットタイプの定義</li>
+                    <li>各パケットタイプに対応する16進数文字列の提供</li>
+                </ul>
+                <p>コードの全体：</p>
+                <pre>
+module.exports = {
+    CHARACTER_MOVE: "04b01a64",
+    CHAT_MESSAGE: "00b45a64",
+    UNKNOWN_WELCOME:"",
+    MONSTER_MOVE: "17b81a64",
+    MONSTER_SPAWN: "02b81a64",
+    USER_PACKET: "04ac1a64",
+    IKNOW:["21a41a64","17b81a64","04b01a64","00010000","04ac1a64","14b81a64","b4b81a64","53b81a64"]
+};
+                </pre>
+                <p>コメントには各パケットタイプの意味が日本語で記載されています：</p>
+                <pre>
+/*
+座標          04b01a64 
+アイテム使用    06a41a64
+mob出現       02b81a64
+モンスター動き  17b81a64
+呪文設定    　　0b941a64
+MP、HP、FP変更 21a41a64
+呪文切れ       27a41a64
+...
+*/
+                </pre>
+            </div>
+        </div>
+
+        <div class="diagram">
+            <h2>6. overlay.html の詳細</h2>
+            <div class="flowchart">
+                <pre class="mermaid">
+                    flowchart TD
+                    A[overlay.html] --> B[HTML構造]
+                    A --> C[CSS スタイリング]
+                    A --> D[JavaScript 機能]
+
+                    B --> B1[コントロール]
+                    B --> B2[モンスターリスト]
+                    B --> B3[マップコンテナ]
+
+                    D --> D1[IPC通信リスナー]
+                    D --> D2[マップ描画機能]
+                    D --> D3[モンスター情報更新]
+                    D --> D4[ユーザーインタラクション]
+
+                    D1 --> D1A[monster-position]
+                    D1 --> D1B[player-position]
+                    D1 --> D1C[user-position]
+
+                    style A fill:#f9d5e5,stroke:#333,stroke-width:1px
+                    style D fill:#d3f0ee,stroke:#333,stroke-width:1px
+                </pre>
+            </div>
+            <div class="code-explanation">
+                <p><strong>overlay.html</strong>の主な機能：</p>
+                <ul>
+                    <li>モンスター、プレイヤー、ユーザーの位置データの視覚化</li>
+                    <li>インタラクティブなマップ表示</li>
+                    <li>フィルタリングと検索機能</li>
+                    <li>IPC通信によるデータ受信</li>
+                </ul>
+                <p>コードの重要な部分：</p>
+                <pre>
+// IPC通信リスナー
+ipcRenderer.on('monster-position', (event, data) => {
+    // モンスター位置情報の更新
+    updateMonsterInfo(data);
+});
+
+ipcRenderer.on('player-position', (event, data) => {
+    // プレイヤー位置の更新
+    playerPosition = data;
+
+    // モンスター情報の更新
+    for (const id in monsters) {
+        if (monsters[id] && monsters[id].lastData) {
+            updateMonsterInfo(monsters[id].lastData);
+        }
+    }
+});
+
+// モンスター情報の更新関数
+function updateMonsterInfo(data) {
+    // モンスターIDの取得
+    const id = data.id;
+
+    // モンスター情報の保存
+    if (!monsters[id]) {
+        monsters[id] = {
+            element: null,
+            lastData: null
+        };
+    }
+
+    // データの更新
+    monsters[id].lastData = data;
+
+    // マップ上の表示を更新
+    renderMap();
+}
+                </pre>
+            </div>
+        </div>
+
+        <div class="diagram">
+            <h2>7. マップ更新プロセスの詳細</h2>
+            <div class="flowchart">
+                <pre class="mermaid">
+                    sequenceDiagram
+                    participant PP as PacketParser
+                    participant MP as メインプロセス (index.js)
+                    participant IPC as IPC通信
+                    participant OL as オーバーレイ (overlay.html)
+                    participant Map as マップレンダリング
+
+                    PP->>MP: パケット解析結果
+                    MP->>IPC: monster-position イベント
+                    MP->>IPC: player-position イベント
+                    MP->>IPC: user-position イベント
+                    IPC->>OL: イベントデータ
+                    OL->>OL: updateMonsterInfo()
+                    OL->>OL: monsters[id].lastData 更新
+                    OL->>Map: renderMap()
+                    Map->>Map: drawGrid()
+                    Map->>Map: drawPaths()
+                    Map->>Map: drawEntities()
+                    Map->>Map: centerMapOnPlayer()
+                </pre>
+            </div>
+            <div class="code-explanation">
+                <p><strong>マップ更新プロセス</strong>の詳細：</p>
+                <ol>
+                    <li><strong>パケット解析とデータ送信</strong>:
+                        <ul>
+                            <li>PacketParserがゲームパケットを解析し、モンスター、プレイヤー、ユーザーの位置データを抽出</li>
+                            <li>抽出されたデータはIPCを通じてメインプロセス（index.js）からオーバーレイ（overlay.html）に送信</li>
+                            <li>送信されるイベント: 'monster-position', 'player-position', 'user-position'</li>
+                        </ul>
+                    </li>
+                    <li><strong>データの受信と保存</strong>:
+                        <ul>
+                            <li>オーバーレイはIPC通信リスナーを通じてデータを受信</li>
+                            <li>モンスターデータは<code>monsters</code>オブジェクトに保存（キー: モンスターID）</li>
+                            <li>プレイヤーデータは<code>playerPosition</code>オブジェクトに保存</li>
+                            <li>ユーザーデータは<code>userPosition</code>オブジェクトに保存</li>
+                        </ul>
+                    </li>
+                    <li><strong>マップの更新</strong>:
+                        <ul>
+                            <li>新しいデータが受信されると<code>renderMap()</code>関数が呼び出される</li>
+                            <li>マップのキャンバスがクリアされ、新しいデータに基づいて再描画</li>
+                            <li>グリッド、パス（有効な場合）、エンティティ（プレイヤーとモンスター）が描画される</li>
+                        </ul>
+                    </li>
+                </ol>
+                <p>マップ更新の主要コンポーネント：</p>
+                <pre>
+// マップ設定オブジェクト
+const mapConfig = {
+    canvas: document.getElementById('map-canvas'),
+    scale: 1.0,
+    offsetX: 0,
+    offsetY: 0,
+    tracking: true,
+    filteredMonsters: new Set(),
+    searchTerm: '',
+    // その他の設定...
+};
+
+// マップレンダリング関数
+function renderMap() {
+    const canvas = mapConfig.canvas;
+    const ctx = canvas.getContext('2d');
+
+    // キャンバスをクリア
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // グリッドを描画
+    drawGrid(ctx);
+
+    // パスを描画（有効な場合）
+    if (mapConfig.showPaths) {
+        drawPaths(ctx);
+    }
+
+    // エンティティを描画
+    drawEntities(ctx);
+
+    // トラッキングが有効な場合、プレイヤーを中心に表示
+    if (mapConfig.tracking) {
+        centerMapOnPlayer();
+    }
+}
+
+// エンティティ（プレイヤーとモンスター）の描画
+function drawEntities(ctx) {
+    // プレイヤーを描画
+    // ...
+
+    // モンスターを描画
+    for (const id in monsters) {
+        // フィルタリングされたモンスターをスキップ
+        if (mapConfig.filteredMonsters.has(id)) {
+            continue;
+        }
+
+        const monster = monsters[id].lastData;
+        if (!monster) continue;
+
+        // 検索条件に一致しないモンスターをスキップ
+        if (mapConfig.searchTerm) {
+            // ...
+        }
+
+        // プレイヤーに対する相対位置を計算
+        const relX = monster.x - playerPosition.x;
+        const relZ = monster.z - playerPosition.z;
+
+        // スクリーン座標に変換
+        const screenX = centerX + relX * mapConfig.scale;
+        const screenY = centerY + relZ * mapConfig.scale;
+
+        // モンスターを描画
+        // ...
+    }
+}
+                </pre>
+            </div>
+            <div class="flowchart">
+                <pre class="mermaid">
+                    flowchart TD
+                    A[パケット受信] --> B[IPC通信]
+                    B --> C[データ保存]
+                    C --> D[マップ更新]
+
+                    D --> D1[キャンバスクリア]
+                    D --> D2[グリッド描画]
+                    D --> D3[パス描画]
+                    D --> D4[エンティティ描画]
+
+                    D4 --> E1[プレイヤー描画]
+                    D4 --> E2[モンスター描画]
+
+                    E2 --> F1[フィルタリング]
+                    E2 --> F2[相対位置計算]
+                    E2 --> F3[スクリーン座標変換]
+                    E2 --> F4[モンスター描画]
+
+                    style A fill:#f9d5e5,stroke:#333,stroke-width:1px
+                    style D fill:#d3f0ee,stroke:#333,stroke-width:1px
+                    style E2 fill:#f9d5e5,stroke:#333,stroke-width:1px
+                </pre>
+            </div>
+            <div class="code-explanation">
+                <p><strong>モンスター位置の追跡と更新</strong>:</p>
+                <ul>
+                    <li><strong>データ構造</strong>: モンスターデータは<code>monsters</code>オブジェクトに保存され、各モンスターはIDをキーとして識別</li>
+                    <li><strong>データ更新</strong>: 新しいモンスターデータが受信されると、<code>updateMonsterInfo</code>関数が呼び出され、モンスターの情報が更新</li>
+                    <li><strong>相対位置計算</strong>: モンスターの位置はプレイヤーの位置に対する相対座標として計算</li>
+                    <li><strong>パス追跡</strong>: モンスターの移動パスは<code>updatePathHistory</code>関数によって追跡され、マップ上に表示可能</li>
+                    <li><strong>フィルタリング</strong>: モンスターはID、距離、その他の条件に基づいてフィルタリング可能</li>
+                </ul>
+
+                <p><strong>マップの対話機能</strong>:</p>
+                <ul>
+                    <li><strong>ズーム</strong>: マップは<code>mapConfig.scale</code>を変更することでズームイン/アウト可能</li>
+                    <li><strong>パン</strong>: マップは<code>mapConfig.offsetX</code>と<code>mapConfig.offsetY</code>を変更することで移動可能</li>
+                    <li><strong>トラッキング</strong>: <code>mapConfig.tracking</code>が有効な場合、マップは自動的にプレイヤーを中心に表示</li>
+                    <li><strong>距離測定</strong>: マップ上の2点間の距離を測定する機能</li>
+                    <li><strong>エンティティ情報</strong>: マップ上のエンティティにホバーすると詳細情報が表示</li>
+                </ul>
+
+                <p><strong>マップ更新の最適化</strong>:</p>
+                <ul>
+                    <li>画面外のモンスターはレンダリングをスキップして効率化</li>
+                    <li>パス履歴は一定の長さに制限され、メモリ使用量を抑制</li>
+                    <li>パス更新は一定の時間間隔でのみ行われ、パフォーマンスを向上</li>
+                    <li>マップのレンダリングはリクエストアニメーションフレームを使用して最適化</li>
+                </ul>
+            </div>
+        </div>
+
+        <script>
+            mermaid.initialize({ startOnLoad: true, theme: 'default' });
+        </script>
+    </div>
+</body>
+</html>

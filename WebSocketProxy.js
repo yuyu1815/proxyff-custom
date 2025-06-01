@@ -39,7 +39,7 @@ module.exports = class WebSocketProxy {
             xorKeyChunks.push(xorKey);
         }
         let fullXorKey = Buffer.concat(xorKeyChunks).slice(0, dataBuffer.length);
-        //console.log(fullXorKey);
+        //console.log(fullXorKey); // XORキーの完全な値をログ出力
         return xor(dataBuffer, fullXorKey);
     }
 

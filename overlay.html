@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Monster Info Display</title>
+    <link rel="stylesheet" href="overlay.css">
+</head>
+<body>
+    <div id="controls">
+        <button id="clear-monsters">Clear All</button>
+        <button id="toggle-map">Toggle Map</button>
+        <button id="copy-monster-ids">Copy Map IDs</button>
+    </div>
+
+    <div id="overlay-container">
+        <div id="monster-list">
+            <!-- Monster info will be added here -->
+        </div>
+
+        <!-- Map Container -->
+        <div id="map-container">
+            <canvas id="map-canvas"></canvas>
+            <div id="map-info">X: 0, Z: 0 | Zoom: 1x</div>
+            <div id="map-search-container">
+                <label for="monster-id-search">ID:</label>
+                <input type="text" id="monster-id-search" placeholder="Filter by ID">
+                <button id="search-clear">Clear</button>
+            </div>
+            <div id="map-controls">
+                <div class="map-button" id="zoom-in">+</div>
+                <div class="map-button" id="zoom-out">-</div>
+                <div class="map-button" id="center-map">⌂</div>
+                <div class="map-button" id="toggle-tracking">⟲</div>
+                <div class="map-button" id="toggle-filter">⚙</div>
+                <div class="map-button" id="measure-distance">📏</div>
+                <div class="map-button" id="toggle-paths">🔄</div>
+            </div>
+            <canvas id="distance-line"></canvas>
+            <div id="entity-tooltip"></div>
+        </div>
+    </div>
+
+    <script src="overlay.js"></script>
+</body>
+</html>

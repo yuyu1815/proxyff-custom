@@ -7,14 +7,14 @@ window.addEventListener('load', (event) => {
 
   /* wsHook.js
    * https://github.com/skepticfx/wshook
-   * Reference: http://www.w3.org/TR/2011/WD-websockets-20110419/#websocket
+   * 参考: http://www.w3.org/TR/2011/WD-websockets-20110419/#websocket
    */
 
   (function () {
     var wsHook = {};
 
-    // Mutable MessageEvent.
-    // Subclasses MessageEvent and makes data, origin and other MessageEvent properites mutatble.
+    // 変更可能なMessageEvent
+    // MessageEventを継承し、data、origin、その他のMessageEventプロパティを変更可能にする
     function MutableMessageEvent(o) {
       this.bubbles = o.bubbles || false
       this.cancelBubble = o.cancelBubble || false
@@ -65,11 +65,11 @@ window.addEventListener('load', (event) => {
         _send.apply(this, arguments)
       }
 
-      // Events needs to be proxied and bubbled down.
+      // イベントはプロキシされ、下位に伝播する必要がある
       WSObject._addEventListener = WSObject.addEventListener
       WSObject.addEventListener = function () {
         var eventThis = this
-        // if eventName is 'message'
+        // イベント名が'message'の場合
         if (arguments[0] === 'message') {
           arguments[1] = (function (userFunc) {
             return function instrumentAddEventListener() {
@@ -107,17 +107,17 @@ window.addEventListener('load', (event) => {
         data: Buffer.from(data),
         direction: "SEND"
       });
-      //ipcRenderer.send("websocket-send", url, data);
+      //ipcRenderer.send("websocket-send", url, data); // WebSocket送信イベントをメインプロセスに送信
     }
 
-    // Make sure your program calls `wsClient.onmessage` event handler somewhere.
+    // プログラムがどこかで`wsClient.onmessage`イベントハンドラを呼び出すことを確認してください
     wsHook.after = function (messageEvent, url, wsObject) {
       sendBuffer.push({
         url: url,
         data: Buffer.from(messageEvent.data),
         direction: "RECV",
       });
-      //ipcRenderer.send("websocket-receive", url, messageEvent.data);
+      //ipcRenderer.send("websocket-receive", url, messageEvent.data); // WebSocket受信イベントをメインプロセスに送信
       return messageEvent;
     };
 
