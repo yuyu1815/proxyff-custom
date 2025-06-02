@@ -1,45 +1,66 @@
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>Monster Info Display</title>
-    <link rel="stylesheet" href="overlay.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>マップオーバーレイ</title>
+  <link rel="stylesheet" href="overlay.css">
 </head>
 <body>
-    <div id="controls">
-        <button id="clear-monsters">Clear All</button>
-        <button id="toggle-map">Toggle Map</button>
-        <button id="copy-monster-ids">Copy Map IDs</button>
+  <div class="overlay-container">
+    <!-- コントロールパネル -->
+    <div class="control-panel">
+      <div class="control-group">
+        <button id="toggle-map" class="control-button">マップを非表示</button>
+        <button id="clear-monsters" class="control-button">モンスタークリア</button>
+        <button id="copy-monster-ids" class="control-button">IDをコピー</button>
+      </div>
+
+      <div class="control-group">
+        <input type="text" id="monster-id-search" class="search-input" placeholder="モンスターID検索...">
+      </div>
+
+      <div class="control-group map-controls">
+        <button id="zoom-in" class="control-button">拡大</button>
+        <button id="zoom-out" class="control-button">縮小</button>
+        <button id="center-map" class="control-button">中央揃え</button>
+        <button id="toggle-tracking" class="control-button">追従OFF</button>
+      </div>
+
+      <div class="monster-count-container">
+        <span id="monster-count">モンスター数: 0</span>
+      </div>
     </div>
 
-    <div id="overlay-container">
-        <div id="monster-list">
-            <!-- Monster info will be added here -->
+    <!-- メインコンテンツエリア -->
+    <div class="content-area">
+      <!-- マップコンテナ -->
+      <div id="map-container" class="map-container">
+        <canvas id="map-canvas"></canvas>
+      </div>
+
+      <!-- 右側のコンテナ -->
+      <div class="right-container">
+        <!-- モンスターリストコンテナ -->
+        <div class="monster-list-container">
+          <h3>モンスターリスト</h3>
+          <ul id="monster-list" class="monster-list"></ul>
         </div>
 
-        <!-- Map Container -->
-        <div id="map-container">
-            <canvas id="map-canvas"></canvas>
-            <div id="map-info">X: 0, Z: 0 | Zoom: 1x</div>
-            <div id="map-search-container">
-                <label for="monster-id-search">ID:</label>
-                <input type="text" id="monster-id-search" placeholder="Filter by ID">
-                <button id="search-clear">Clear</button>
-            </div>
-            <div id="map-controls">
-                <div class="map-button" id="zoom-in">+</div>
-                <div class="map-button" id="zoom-out">-</div>
-                <div class="map-button" id="center-map">⌂</div>
-                <div class="map-button" id="toggle-tracking">⟲</div>
-                <div class="map-button" id="toggle-filter">⚙</div>
-                <div class="map-button" id="measure-distance">📏</div>
-                <div class="map-button" id="toggle-paths">🔄</div>
-            </div>
-            <canvas id="distance-line"></canvas>
-            <div id="entity-tooltip"></div>
+        <!-- ログコンテナ -->
+        <div class="log-container">
+          <div class="log-header">
+            <h3>ログ</h3>
+            <button id="clear-logs" class="control-button small">クリア</button>
+            <button id="toggle-logs" class="control-button small">非表示</button>
+          </div>
+          <div id="log-display" class="log-display"></div>
         </div>
+      </div>
     </div>
+  </div>
 
-    <script src="overlay.js"></script>
+  <!-- スクリプト -->
+  <script src="overlay.js"></script>
 </body>
 </html>

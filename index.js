@@ -58,10 +58,24 @@ ipcMain.on('monster-position', (event, data) => {
     lastUpdate: Date.now()
   });
 
+  // ログメッセージを作成
+  const spawnLog = [
+    "MONSTER_SPAWN",
+    `モンスターの座標: X: ${data.x}, Y: ${data.y}, Z: ${data.z}, ID: ${data.id}`,
+    `モンスターの位置をオーバーレイに転送しました（ID: ${data.id}）`
+  ];
+
   // モンスターの位置データをオーバーレイウィンドウに転送
   if (global.overlayWindow && !global.overlayWindow.isDestroyed()) {
     global.overlayWindow.webContents.send('monster-position', data);
     console.log(`モンスターの位置をオーバーレイに転送しました（ID: ${data.id}）`);
+
+    // ログメッセージをオーバーレイに転送
+    global.overlayWindow.webContents.send('log-message', {
+      type: 'monster-spawn',
+      messages: spawnLog,
+      timestamp: Date.now()
+    });
   } else {
     console.log(`モンスターの位置を保存しましたが、オーバーレイウィンドウが利用できません（ID: ${data.id}）`);
   }
