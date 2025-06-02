@@ -300,7 +300,7 @@ module.exports = class PacketParser {
                 currentCursor = 0;
 
                 // Scan through the entire packet looking for MONSTER_SPAWN signatures
-                while (currentCursor + 44 <= rawPacket.length) { // Ensure we have enough bytes to read a complete monster spawn data
+                while (currentCursor + 48 <= rawPacket.length) { // Ensure we have enough bytes to read a complete monster spawn data
                     // Check if we have a MONSTER_SPAWN signature at the current position
                     const currentPosition = currentCursor;
                     const possiblePacketType = rawPacket.slice(currentPosition, currentPosition + 4).toString('hex');
@@ -316,18 +316,20 @@ module.exports = class PacketParser {
                         // Skip unknown data (20 bytes: 8 bytes unknown data 1 + 12 bytes unknown data 2)
                         currentCursor += 20;
                         // Read coordinates (each 4 bytes)
-                        // According to the issue description, coordinates are in order: X, Z, Y
-                        const xPosBuffer = rawPacket.slice(currentCursor, currentCursor + 4);
-                        const xPos = xPosBuffer.readFloatLE(0);  // X coordinate (offset 32-35)
-                        currentCursor += 4;
+                        // According to the issue description, coordinates are remapped:
+                        // Original X (at currentCursor + 0) is unused for emit.
+                        // Game X (at currentCursor + 4) becomes xPos.
+                        // Game Z/Height (at currentCursor + 8) becomes zPos.
+                        // Game Y/Depth (at currentCursor + 12) becomes yPos.
 
-                        const zPosBuffer = rawPacket.slice(currentCursor, currentCursor + 4);
-                        const zPos = zPosBuffer.readFloatLE(0);  // Z coordinate (offset 36-39)
-                        currentCursor += 4;
+                        // const unused_originalX = rawPacket.readFloatLE(currentCursor); // Original X at offset 0x20 from monster chunk start
 
-                        const yPosBuffer = rawPacket.slice(currentCursor, currentCursor + 4);
-                        const yPos = yPosBuffer.readFloatLE(0);  // Y coordinate (offset 40-43)
-                        currentCursor += 4;
+                        const xPos = rawPacket.readFloatLE(currentCursor + 4);  // Game X (formerly zPos)
+                        const zPos = rawPacket.readFloatLE(currentCursor + 8);  // Game Z/Height (formerly yPos)
+                        const yPos = rawPacket.readFloatLE(currentCursor + 12); // Game Y/Depth (newly read field)
+
+                        // Advance cursor past these 16 bytes of coordinate data
+                        currentCursor += 16;
 
                         console.log(`モンスターの座標: X: ${xPos}, Y: ${yPos}, Z: ${zPos}, ID: ${monsterId}`);
 
